@@ -46,7 +46,7 @@ from .patcher import Patcher
 from .reactor import Reactor
 from .webelement import UCWebElement
 from .webelement import WebElement
-
+import pickle
 
 __all__ = (
     "Chrome",
@@ -462,7 +462,7 @@ class Chrome(selenium.webdriver.chrome.webdriver.WebDriver):
         service = selenium.webdriver.chromium.service.ChromiumService(
             self.patcher.executable_path
         )
-
+        self.pickled_options = pickle.dumps(options)
         super(Chrome, self).__init__(
             service=service,
             options=options,
