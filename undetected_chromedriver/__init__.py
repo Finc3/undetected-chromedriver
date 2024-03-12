@@ -125,6 +125,7 @@ class Chrome(selenium.webdriver.chrome.webdriver.WebDriver):
         debug=False,
         no_sandbox=True,
         user_multi_procs: bool = False,
+        instance_id=None,
         **kw,
     ):
         """
@@ -463,6 +464,7 @@ class Chrome(selenium.webdriver.chrome.webdriver.WebDriver):
             self.patcher.executable_path
         )
         self.pickled_options = pickle.dumps(options)
+        # pickle.dump(options, open(f"options_{instance_id}.pickle", "wb"))
         super(Chrome, self).__init__(
             service=service,
             options=options,
@@ -840,7 +842,7 @@ class Chrome(selenium.webdriver.chrome.webdriver.WebDriver):
             self.service.process.kill()
         except:  # noqa
             pass
-        self.quit()
+        # self.quit()
 
     @classmethod
     def _ensure_close(cls, self):
