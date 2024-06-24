@@ -15,7 +15,7 @@ import codecs
 import os
 import re
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 dirname = os.path.abspath(os.path.dirname(__file__))
@@ -39,13 +39,13 @@ description = (
 setup(
     name="undetected-chromedriver",
     version=version,
-    packages=["undetected_chromedriver"],
+    packages=find_packages(include=["undetected_chromedriver", "undetected_chromedriver.*"]),
     install_requires=[
         "selenium>=4.9.0",
         "requests",
         "websockets",
     ],
-    package_data={"undetected_chromedriver": [os.path.join("example", "example.py")]},
+    package_data={"undetected_chromedriver": ["*"]},
     url="https://github.com/ultrafunkamsterdam/undetected-chromedriver",
     license="GPL-3.0",
     author="UltrafunkAmsterdam",
