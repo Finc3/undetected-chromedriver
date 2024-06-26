@@ -48,16 +48,18 @@ class VersionManager:
         if os.geteuid() != 0:
             logger.info("Insufficient rights")
         try:
-            chrome_download_url = f"https://mirror.cs.uchicago.edu/google-chrome/pool/main/g/google-chrome-stable/google-chrome-stable_{version}-1_amd64.deb"  # https://mirror.cs.uchicago.edu/google-chrome/pool/main/g/google-chrome-stable/google-chrome-stable_114.0.5735.90-1_amd64.deb
-            chrome_installer_path = f"google-chrome-stable_{version}-1_amd64.deb"
-            subprocess.run(["dpkg", "--configure", "--force-overwrite", "-a"], check=True)
-            subprocess.run(["dpkg", "-i", chrome_installer_path], check=True)
+            if version:
+                chrome_download_url = f"https://mirror.cs.uchicago.edu/google-chrome/pool/main/g/google-chrome-stable/google-chrome-stable_{version}-1_amd64.deb"  # https://mirror.cs.uchicago.edu/google-chrome/pool/main/g/google-chrome-stable/google-chrome-stable_114.0.5735.90-1_amd64.deb
+                chrome_installer_path = f"google-chrome-stable_{version}-1_amd64.deb"
+                subprocess.run(["dpkg", "--configure", "--force-overwrite", "-a"], check=True)
+                subprocess.run(["dpkg", "-i", chrome_installer_path], check=True)
+            else:
+                chrome_download_url = "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"  # https://mirror.cs.uchicago.edu/google-chrome/pool/main/g/google-chrome-stable/google-chrome-stable_114.0.5735.90-1_amd64.deb
+                subprocess.run(["wget", chrome_download_url], check=True)  # sudo apt --fix-broken install
+                subprocess.run(["apt-get", "install", "-f"], check=True)
+                subprocess.run(["dpkg", "-i", "google-chrome-stable_current_amd64.deb"], check=True)
         except subprocess.CalledProcessError as e:
-            logger.info(f"Operation failed with error code: {e.returncode}...trying latest version")
-            chrome_download_url = "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"  # https://mirror.cs.uchicago.edu/google-chrome/pool/main/g/google-chrome-stable/google-chrome-stable_114.0.5735.90-1_amd64.deb
-            subprocess.run(["wget", chrome_download_url], check=True)  # sudo apt --fix-broken install
-            subprocess.run(["dpkg", "-i", "google-chrome-stable_current_amd64.deb"], check=True)
-            subprocess.run(["apt-get", "install", "-f"], check=True)
+            raise e
 
     def get_executable_path(self):
         return self.standard_path
