@@ -22,7 +22,7 @@ class VersionManager:
 
     def get_chromedriver_version(self):
         try:
-            cmd = [self.standard_path, "--version"]
+            cmd = ["sudo",self.standard_path, "--version"]
             result = subprocess.run(cmd, capture_output=True, text=True)
             return result.stdout.split()[1]
         except IndexError:
