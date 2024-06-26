@@ -7,7 +7,7 @@ from common.util import logger
 
 class VersionManager:
     def __init__(self):
-        self.standard_path = os.path.join(str(pathlib.Path(__name__).parent.resolve()), ".ucdriver")
+        self.standard_path = os.path.join(str(pathlib.Path(__name__).parent.resolve()))
         self.chromedriver_version = self.get_chromedriver_version()
         self.start()
 
@@ -22,15 +22,16 @@ class VersionManager:
 
     def get_chromedriver_version(self):
         try:
-            cmd = ["sudo",self.standard_path, "--version"]
+            cmd = ["sudo",f"{self.standard_path}.ucdriver", "--version"]
             result = subprocess.run(cmd, capture_output=True, text=True)
             return result.stdout.split()[1]
-        except IndexError:
+        except (IndexError, PermissionError):
             logger.info("No ChromeDriver version found")
             return False
 
     def start(self):
         if not self.chromedriver_version:
+            print(self.get_executable_path())
             return self.get_executable_path()
         installed_chrome_version = self.get_installed_chrome_version()
         if not installed_chrome_version and not self.chromedriver_version:
