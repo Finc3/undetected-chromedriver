@@ -1,17 +1,15 @@
 import os
+import pathlib
 import subprocess
 
-import chromedriver_autoinstaller
-from chromedriver_py import binary_path
 from common.util import logger
 
 
 class VersionManager:
     def __init__(self):
-        self.standard_path = binary_path
+        self.standard_path = os.path.join(str(pathlib.Path(__name__).parent.resolve()), ".ucdriver")
         self.chromedriver_version = self.get_chromedriver_version()
         self.start()
-        self.get_executable_path()
 
     def get_installed_chrome_version(self):
         try:
@@ -33,10 +31,11 @@ class VersionManager:
 
     def start(self):
         if not self.chromedriver_version:
-            chromedriver_autoinstaller.install()
             return self.get_executable_path()
         installed_chrome_version = self.get_installed_chrome_version()
-        if not installed_chrome_version:
+        if not installed_chrome_version and not self.chromedriver_version:
+            self.install_chrome()
+        elif not installed_chrome_version and self.chromedriver_version:
             self.install_chrome(self.chromedriver_version)
         elif installed_chrome_version != self.chromedriver_version:
             self.install_chrome(self.chromedriver_version)
@@ -51,10 +50,8 @@ class VersionManager:
         try:
             chrome_download_url = f"https://mirror.cs.uchicago.edu/google-chrome/pool/main/g/google-chrome-stable/google-chrome-stable_{version}-1_amd64.deb"  # https://mirror.cs.uchicago.edu/google-chrome/pool/main/g/google-chrome-stable/google-chrome-stable_114.0.5735.90-1_amd64.deb
             chrome_installer_path = f"google-chrome-stable_{version}-1_amd64.deb"
-            # subprocess.run(["apt", "--fix-broken", "install", "-f"], check=True)  # sudo apt --fix-broken install
             subprocess.run(["dpkg", "--configure", "--force-overwrite", "-a"], check=True)
             subprocess.run(["dpkg", "-i", chrome_installer_path], check=True)
-            # subprocess.run(["apt-mark", "hold", "google-chrome-stable"], check=True)
         except subprocess.CalledProcessError as e:
             logger.info(f"Operation failed with error code: {e.returncode}...trying latest version")
             chrome_download_url = "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"  # https://mirror.cs.uchicago.edu/google-chrome/pool/main/g/google-chrome-stable/google-chrome-stable_114.0.5735.90-1_amd64.deb
@@ -62,6 +59,5 @@ class VersionManager:
             subprocess.run(["dpkg", "-i", "google-chrome-stable_current_amd64.deb"], check=True)
             subprocess.run(["apt-get", "install", "-f"], check=True)
 
-    def get_executable_path(self):  # /snap/bin/chromium.chromedriver
+    def get_executable_path(self):
         return self.standard_path
-        # return ChromeDriverManager().install()  # TODO check where UC is installing the driver to
