@@ -89,7 +89,7 @@ class VersionManager:
             else:
                 chrome_download_url = "https://mirror.cs.uchicago.edu/google-chrome/pool/main/g/google-chrome-stable/google-chrome-stable_122.0.6261.128-1_amd64.deb"  #Just a test
                 subprocess.run(["wget", chrome_download_url], check=True)
-                subprocess.run(["dpkg", "--configure", "-a"]check=True)
+                subprocess.run(["dpkg", "--configure", "-a"], check=True)
                 result = subprocess.run(["apt", "install", "-y", "./google-chrome-stable_122.0.6261.128-1_amd64.deb"], check=True)
         except subprocess.CalledProcessError as e:
             raise e
