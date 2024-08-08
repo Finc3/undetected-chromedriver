@@ -3,7 +3,6 @@ import pathlib
 import subprocess
 import time
 
-from common import logger
 
 
 class VersionManager:
@@ -44,7 +43,6 @@ class VersionManager:
             installed_version = installed_version_bytes.decode("UTF-8").split()[-1]
             return installed_version
         except Exception as e:
-            logger.debug("Chrome not installed...installing...")
             return False
 
     def get_chromedriver_version(self):
@@ -59,7 +57,6 @@ class VersionManager:
                 return result.stdout.split()[1]
             return False
         except (IndexError, PermissionError, FileNotFoundError):
-            logger.info("No ChromeDriver version found")
             return False
 
     def start(self):
@@ -74,13 +71,11 @@ class VersionManager:
             print("Chrome is not up to date")
             self.install_chrome(self.chromedriver_version)
         else:
-            logger.info("Chrome is up to date")
+            pass
         path = self.get_executable_path()
         return path
 
     def install_chrome(self, version):
-        if os.geteuid() != 0:
-            logger.info("Insufficient rights")
         try:
             if version:
                 chrome_download_url = f"https://mirror.cs.uchicago.edu/google-chrome/pool/main/g/google-chrome-stable/google-chrome-stable_{version}-1_amd64.deb"  # https://mirror.cs.uchicago.edu/google-chrome/pool/main/g/google-chrome-stable/google-chrome-stable_114.0.5735.90-1_amd64.deb
@@ -106,7 +101,6 @@ class VersionManager:
                 if result.returncode == 0:
                     return True
             except subprocess.CalledProcessError:
-                logger.info("Chrome not installed yet")
                 continue
 
     def get_executable_path(self):
