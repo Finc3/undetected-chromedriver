@@ -3,7 +3,7 @@ import pathlib
 import subprocess
 import time
 
-from common.util import logger
+from common import logger
 
 
 class VersionManager:
