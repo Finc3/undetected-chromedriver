@@ -78,9 +78,9 @@ class VersionManager:
     def install_chrome(self, version):
         try:
             chrome_download_url = "https://mirror.cs.uchicago.edu/google-chrome/pool/main/g/google-chrome-stable/google-chrome-stable_127.0.6533.72-1_amd64.deb"
-            subprocess.run(["wget", chrome_download_url], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
-            subprocess.run(["dpkg", "--configure", "-a"], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
-            result = subprocess.run(["apt", "install", "-y", "./google-chrome-stable_127.0.6533.72-1_amd64.deb"], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+            subprocess.run(["wget", chrome_download_url])
+            subprocess.run(["dpkg", "--configure", "-a"])
+            result = subprocess.run(["apt", "install", "-y", "./google-chrome-stable_127.0.6533.72-1_amd64.deb"])
             os.remove("google-chrome-stable_127.0.6533.72-1_amd64.deb")
         except subprocess.CalledProcessError as e:
             raise e
