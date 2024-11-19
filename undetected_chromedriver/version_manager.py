@@ -39,7 +39,10 @@ class VersionManager:
 
     def get_installed_chrome_version(self):
         try:
-            installed_version_bytes = subprocess.check_output(["google-chrome", "--version"])
+            if os.getenv("USE_MAC_QUEUE") == "true":
+                installed_version_bytes = subprocess.check_output(["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome","--version"])
+            else:
+                installed_version_bytes = subprocess.check_output(["google-chrome", "--version"])
             installed_version = installed_version_bytes.decode("UTF-8").split()[-1]
             return installed_version
         except Exception as e:
@@ -77,11 +80,14 @@ class VersionManager:
 
     def install_chrome(self, version):
         try:
-            chrome_download_url = "https://mirror.cs.uchicago.edu/google-chrome/pool/main/g/google-chrome-stable/google-chrome-stable_127.0.6533.72-1_amd64.deb"
-            subprocess.run(["wget", chrome_download_url])
-            subprocess.run(["dpkg", "--configure", "-a"])
-            result = subprocess.run(["apt", "install", "-y", "./google-chrome-stable_127.0.6533.72-1_amd64.deb"])
-            os.remove("google-chrome-stable_127.0.6533.72-1_amd64.deb")
+            if os.getenv("USE_MAC_QUEUE") == "true":
+                result = subprocess.run(["brew", "install", "--cask", "google-chrome"], check=True)
+            else:
+                chrome_download_url = "https://mirror.cs.uchicago.edu/google-chrome/pool/main/g/google-chrome-stable/google-chrome-stable_127.0.6533.72-1_amd64.deb"
+                subprocess.run(["wget", chrome_download_url])
+                subprocess.run(["dpkg", "--configure", "-a"])
+                result = subprocess.run(["apt", "install", "-y", "./google-chrome-stable_127.0.6533.72-1_amd64.deb"])
+                os.remove("google-chrome-stable_127.0.6533.72-1_amd64.deb")
         except subprocess.CalledProcessError as e:
             raise e
 
