@@ -16,7 +16,8 @@ os.makedirs(INSTANCE_DRIVERS, exist_ok=True, mode=0o755)
 def cached_package(self):
     if not os.path.exists(DRIVER_PATH):
         path = self._fetch_package()
-        os.rename(path, DRIVER_PATH + ".zip")
+        shutil.copy2(path, DRIVER_PATH + ".zip")
+        os.remove(path)
         unzip_package_main()
     instance_id = uuid4().hex
     self.executable_path = os.path.join(INSTANCE_DRIVERS, instance_id)
