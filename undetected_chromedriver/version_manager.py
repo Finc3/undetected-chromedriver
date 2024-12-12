@@ -80,6 +80,9 @@ class VersionManager:
 
     def install_chrome(self, version):
         try:
+            if os.getenv("USE_DOCKER") == "true":
+                return True
+            
             if os.getenv("USE_MAC_QUEUE") == "true":
                 result = subprocess.run(["brew", "install", "--cask", "google-chrome"], check=True)
             else:
