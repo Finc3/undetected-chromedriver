@@ -40,7 +40,7 @@ class VersionManager:
     def get_installed_chrome_version(self):
         try:
             if os.getenv("USE_MAC_QUEUE") == "true":
-                installed_version_bytes = subprocess.check_output(["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome","--version"])
+                installed_version_bytes = subprocess.check_output(["/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome","--version"])
             else:
                 installed_version_bytes = subprocess.check_output(["google-chrome", "--version"])
             installed_version = installed_version_bytes.decode("UTF-8").split()[-1]
