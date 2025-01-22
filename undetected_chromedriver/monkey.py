@@ -37,8 +37,7 @@ def unzip_package_main():
 
 
 def monkey_patch():
-    patcher_obj = Patcher(version_main=131)
-    patcher_obj._fetch_package = patcher_obj.fetch_package
-    patcher_obj.fetch_package = cached_package
-    patcher_obj.cleanup_unused_files = lambda *args: None
-    patcher_obj.unzip_package = lambda *args: None
+    Patcher._fetch_package = Patcher.fetch_package
+    Patcher.fetch_package = cached_package
+    Patcher.cleanup_unused_files = lambda *args: None
+    Patcher.unzip_package = lambda *args: None
