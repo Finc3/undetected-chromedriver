@@ -3,6 +3,7 @@ import pathlib
 import shutil
 import zipfile
 from uuid import uuid4
+import requests
 
 from undetected_chromedriver.patcher import Patcher
 
@@ -13,9 +14,10 @@ os.makedirs(_BASE_DRIVER_PATH, exist_ok=True)
 os.makedirs(INSTANCE_DRIVERS, exist_ok=True, mode=0o755)
 
 
-def cached_package(self):
+def cached_package(self, version=None):
     if not os.path.exists(DRIVER_PATH):
-        path = self._fetch_package()
+        version = fetch_version(version)
+        path = self._fetch_package(version)
         shutil.copy2(path, DRIVER_PATH + ".zip")
         os.remove(path)
         unzip_package_main()
@@ -25,6 +27,14 @@ def cached_package(self):
     os.chmod(self.executable_path, 0o755)
     return DRIVER_PATH
 
+def fetch_version(version=None):
+    if not version:
+        resp = requests.get("https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_STABLE")
+        version = resp.text
+    else:
+        resp = requests.get(f"https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_{version}")
+        version = resp.text
+    return version
 
 def unzip_package_main():
     with zipfile.ZipFile(DRIVER_PATH + ".zip", mode="r") as zf:
@@ -36,8 +46,8 @@ def unzip_package_main():
     os.unlink(DRIVER_PATH + ".zip")
 
 
-def monkey_patch():
+def monkey_patch(version=None):
     Patcher._fetch_package = Patcher.fetch_package
-    Patcher.fetch_package = cached_package
+    Patcher.fetch_package = lambda self: cached_package(self, version)
     Patcher.cleanup_unused_files = lambda *args: None
     Patcher.unzip_package = lambda *args: None
