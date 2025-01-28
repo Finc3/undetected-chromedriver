@@ -9,9 +9,14 @@ class VersionManager:
     def __init__(self):
         self.standard_path = os.path.join(str(pathlib.Path(__name__).parent.resolve()))
         self.instances_path = f"{self.standard_path}/.ucdriver/instances"
+        self.check_for_path()
         self.purge_redundant_drivers()
         self.version_file_path = self.version_file()
         self.chromedriver_version = self.get_chromedriver_version()
+
+    def check_for_path(self):
+        if not os.path.exists(self.instances_path):
+            os.makedirs(self.instances_path, exist_ok=True)
 
     def purge_redundant_drivers(self):
         files = os.listdir(self.instances_path)
