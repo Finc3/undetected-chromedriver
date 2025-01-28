@@ -18,11 +18,18 @@ from urllib.request import urlopen
 from urllib.request import urlretrieve
 import zipfile
 from multiprocessing import Lock
+from uuid import uuid4
+
 
 logger = logging.getLogger(__name__)
 
 IS_POSIX = sys.platform.startswith(("darwin", "cygwin", "linux", "linux2"))
 
+_BASE_DRIVER_PATH = os.path.join(str(pathlib.Path(__name__).parent.resolve()), ".ucdriver")
+DRIVER_PATH = os.path.join(_BASE_DRIVER_PATH, "base_driver")
+INSTANCE_DRIVERS = os.path.join(_BASE_DRIVER_PATH, "instances")
+os.makedirs(_BASE_DRIVER_PATH, exist_ok=True)
+os.makedirs(INSTANCE_DRIVERS, exist_ok=True, mode=0o755)
 
 class Patcher(object):
     lock = Lock()
@@ -269,22 +276,32 @@ class Patcher(object):
                 if match:
                     return LooseVersion(match[1].decode())
 
-    def fetch_package(self, version_full):
+    def fetch_package(self):
         """
         Downloads ChromeDriver from source
 
         :return: path to downloaded file
         """
-        zip_name = f"chromedriver_{self.platform_name}.zip"
-        if self.is_old_chromedriver:
-            download_url = "%s/%s/%s" % (self.url_repo, version_full.vstring, zip_name)
-        else:
-            zip_name = zip_name.replace("_", "-", 1)
-            download_url = "https://storage.googleapis.com/chrome-for-testing-public/%s/%s/%s"
-            download_url %= (version_full, self.platform_name, zip_name)
+        file_extension = ""
+        if not os.path.exists(DRIVER_PATH):
+            zip_name = f"chromedriver_{self.platform_name}.zip"
+            if self.is_old_chromedriver:
+                download_url = "%s/%s/%s" % (self.url_repo, self.version_full.vstring, zip_name)
+            else:
+                zip_name = zip_name.replace("_", "-", 1)
+                download_url = "https://storage.googleapis.com/chrome-for-testing-public/%s/%s/%s"
+                download_url %= (self.version_full, self.platform_name, zip_name)
 
-        logger.debug("downloading from %s" % download_url)
-        return urlretrieve(download_url)[0]
+            logger.debug("downloading from %s" % download_url)
+            path = urlretrieve(download_url)[0]
+            shutil.copy2(path, DRIVER_PATH + ".zip")
+            os.remove(path)
+            file_extension = ".zip"
+        instance_id = uuid4().hex
+        self.executable_path = os.path.join(INSTANCE_DRIVERS, instance_id)
+        shutil.copyfile(DRIVER_PATH + file_extension, os.path.join(INSTANCE_DRIVERS, self.executable_path))
+        os.chmod(self.executable_path, 0o755)
+        return DRIVER_PATH
 
     def unzip_package(self, fp):
         """
@@ -292,24 +309,16 @@ class Patcher(object):
 
         :return: path to unpacked executable
         """
-        exe_path = self.exe_name
-        if not self.is_old_chromedriver:
-            # The new chromedriver unzips into its own folder
-            zip_name = f"chromedriver-{self.platform_name}"
-            exe_path = os.path.join(zip_name, self.exe_name)
-
-        logger.debug("unzipping %s" % fp)
-        try:
-            os.unlink(self.zip_path)
-        except (FileNotFoundError, OSError):
-            pass
-
-        os.makedirs(self.zip_path, mode=0o755, exist_ok=True)
-        with zipfile.ZipFile(fp, mode="r") as zf:
-            zf.extractall(self.zip_path)
-        os.rename(os.path.join(self.zip_path, exe_path), self.executable_path)
-        os.remove(fp)
-        shutil.rmtree(self.zip_path)
+        DRIVER_PATH = fp
+        if os.path.exists(DRIVER_PATH + ".zip"):
+            with zipfile.ZipFile(fp + ".zip", mode="r") as zf:
+                for f in zf.namelist():
+                    if f.split("/")[1] == "chromedriver":
+                        with zf.open(f) as fs, open(fp, "wb") as ft:
+                            shutil.copyfileobj(fs, ft)
+                        break
+            os.unlink(fp + ".zip")
+        self.executable_path = DRIVER_PATH
         os.chmod(self.executable_path, 0o755)
         return self.executable_path
 
