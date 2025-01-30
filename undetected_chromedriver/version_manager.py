@@ -99,11 +99,11 @@ class VersionManager:
                     result = subprocess.run(["apt", "install", "-y", f"./google-chrome-stable_{version}_amd64.deb"])
                     os.remove(f"google-chrome-stable_{version}_amd64.deb")
                 else:
-                    chrome_download_url = "https://mirror.cs.uchicago.edu/google-chrome/pool/main/g/google-chrome-stable/google-chrome-stable_127.0.6533.119-1_amd64.deb"
+                    chrome_download_url = "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"
                     subprocess.run(["wget", chrome_download_url])
                     subprocess.run(["dpkg", "--configure", "-a"])
-                    result = subprocess.run(["apt", "install", "-y", "./google-chrome-stable_127.0.6533.119-1_amd64.deb"])
-                    os.remove("/google-chrome-stable_127.0.6533.119-1_amd64.deb")
+                    result = subprocess.run(["apt", "install", "-y", "./google-chrome-stable_current_amd64.deb"])
+                    os.remove("/google-chrome-stable_current_amd64.deb")
         except subprocess.CalledProcessError as e:
             raise e
 
